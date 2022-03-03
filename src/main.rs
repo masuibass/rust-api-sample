@@ -1,6 +1,22 @@
 use reqwest::Client;
+use serde::Deserialize;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
+
+#[derive(Debug, Deserialize)]
+struct Address {
+    address1: String,
+    address2: String,
+    address3: String,
+    prefcode: String,
+    zipcode: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct ZipCloudResponse {
+    status: u32,
+    results: Vec<Address>,
+}
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -11,7 +27,7 @@ async fn main() -> Result<()> {
         .query(&[("zipcode", "1000002")])
         .send()
         .await?;
-    let body = response.text().await?;
-    println!("{}", body);
+    let body = response.json::<ZipCloudResponse>().await?;
+    println!("{:?}", body);
     Ok(())
 }
